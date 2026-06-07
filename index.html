@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>글로벌 매크로 유동성 및 수급 연쇄 분석</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        :root {
+            --bg-main: #fdfbf7;
+            --accent-warm: #e5e7eb;
+            --text-main: #1f2937;
+            --brand-primary: #3b82f6;
+            --brand-danger: #ef4444;
+            --brand-success: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            scroll-behavior: smooth;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 650px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(229, 231, 235, 0.5);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item.active {
+            color: var(--brand-primary);
+            border-bottom: 2px solid var(--brand-primary);
+        }
+
+        @media (max-width: 768px) {
+            .chart-container { height: 280px; }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* Glowing animation for AI actions */
+        @keyframes pulse-glowing {
+            0%, 100% { box-shadow: 0 0 15px rgba(59, 130, 246, 0.4); }
+            50% { box-shadow: 0 0 25px rgba(59, 130, 246, 0.7); }
+        }
+        .ai-pulse {
+            animation: pulse-glowing 2s infinite;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+<nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+    <div class="max-w-6xl mx-auto px-4">
+        <div class="flex justify-between items-center h-16">
+            <div class="font-bold text-xl tracking-tight text-gray-800">MACRO <span class="text-blue-600">INSIGHT</span></div>
+            <div class="hidden md:flex space-x-8 text-sm font-medium text-gray-500">
+                <a href="#liquidity" class="nav-item transition-colors hover:text-blue-600">유동성 엔진</a>
+                <a href="#shock" class="nav-item transition-colors hover:text-blue-600">수급 쇼크</a>
+                <a href="#beigebook" class="nav-item transition-colors hover:text-blue-600">베이지북</a>
+                <a href="#gamma" class="nav-item transition-colors hover:text-blue-600">파생 구조</a>
+                <a href="#geopolitics" class="nav-item transition-colors hover:text-blue-600">지정학 & 일정</a>
+                <a href="#glossary" id="nav-glossary" class="nav-item transition-colors hover:text-blue-600 font-semibold text-indigo-600">📖 용어 사전</a>
+                <a href="#ai-terminal" class="nav-item text-blue-600 font-semibold flex items-center gap-1 hover:text-blue-700"><span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span> AI 코파일럿</a>
+            </div>
+            <button class="md:hidden text-gray-600">☰</button>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+    
+    <!-- Hero Section -->
+    <header id="main-hero" class="mb-16 text-center">
+        <div class="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-blue-600 uppercase bg-blue-50 rounded-full">
+            Market Analysis Report 2026
+        </div>
+        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
+            글로벌 매크로 유동성 및<br><span class="text-blue-600">유가 수급 연쇄 분석</span>
+        </h1>
+        <p class="max-w-2xl mx-auto text-lg text-gray-600 leading-relaxed">
+            현재의 변동성은 경기 침체의 신호가 아닙니다. 글로벌 공급 충격과 파생 수급 역학이 만들어낸 <span class="font-semibold text-gray-800">"일시적 자금 동맥경화"</span>입니다.
+        </p>
+    </header>
+
+    <!-- Section 1: Liquidity Engine -->
+    <section id="liquidity" class="mb-20">
+        <div class="mb-10">
+            <h2 class="text-2xl font-bold mb-4 flex items-center">
+                <span class="mr-2 text-blue-600">01.</span> 연준 부채 3대 계정과 긴축의 실체 (최근 2개년 월봉 추이)
+            </h2>
+            <p class="text-gray-600">
+                연준의 부채 계정(TGA, RRP, 지급준비금)은 제로섬 관계에 있습니다. 그동안 QT의 고통을 막아주던 RRP 버퍼가 고갈 지점에 안착함에 따라, 이제 실물 유동성인 '지급준비금'이 직접 타격을 입는 긴축 구간을 거쳐 가고 있습니다. 아래 차트는 지난 2년간 월봉 추이를 추적한 결과입니다.
+            </p>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div class="glass-card p-6 rounded-2xl">
+                <div class="chart-container">
+                    <canvas id="liquidityChart"></canvas>
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm border-l-4 border-red-500">
+                    <h3 class="font-bold text-gray-800">TGA (재무부 일반계좌) <span class="text-red-500">↗</span></h3>
+                    <p class="text-sm text-gray-500">목표: 약 9,000억 달러. 재무부가 현금을 쌓을수록 시중 유동성은 흡수됩니다.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm border-l-4 border-yellow-500">
+                    <h3 class="font-bold text-gray-800">RRP (역레포 계정) <span class="text-yellow-500">→</span></h3>
+                    <p class="text-sm text-gray-500">바닥 도달: 1,000억~2,000억 달러 안착. 더 이상 유동성 방어벽 역할을 못함.</p>
+                </div>
+                <div class="p-4 rounded-xl bg-white border border-gray-100 shadow-sm border-l-4 border-blue-500">
+                    <h3 class="font-bold text-gray-800">Reserves (지급준비금) <span class="text-blue-500">↘</span></h3>
+                    <p class="text-sm text-gray-500">위험 구간: 시중 은행의 현금이 직접 감소하며 단기 자금 시장 변동성 자극.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Chain Reaction Flow -->
+    <section id="shock" class="mb-20 bg-gray-900 text-white rounded-3xl p-8 md:p-12 shadow-2xl">
+        <div class="mb-12 text-center">
+            <h2 class="text-3xl font-bold mb-4">국채 금리 상승의 미세 구조</h2>
+            <p class="text-gray-400 max-w-xl mx-auto">유가 급등이 어떻게 미국 국채 금리를 기계적으로 끌어올리는지 그 연쇄 고리를 확인하십시오.</p>
+        </div>
+        
+        <div class="flex flex-col md:flex-row justify-between items-center space-y-8 md:space-y-0 md:space-x-4">
+            <div class="flex-1 text-center group cursor-default">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500 group-hover:bg-blue-500 transition-colors">
+                    <span class="text-2xl">🛢️</span>
+                </div>
+                <h4 class="font-bold mb-2">지정학 리스크</h4>
+                <p class="text-xs text-gray-400 px-4">유가 급등으로 원유 수입국들의 달러 수요 폭증</p>
+            </div>
+            <div class="hidden md:block text-blue-500 text-2xl font-light">→</div>
+            <div class="flex-1 text-center group cursor-default">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500 group-hover:bg-blue-500 transition-colors">
+                    <span class="text-2xl">💵</span>
+                </div>
+                <h4 class="font-bold mb-2">환율 방어 전선</h4>
+                <p class="text-xs text-gray-400 px-4">각국 중앙은행, 달러 확보 위해 미국채 강제 매도</p>
+            </div>
+            <div class="hidden md:block text-blue-500 text-2xl font-light">→</div>
+            <div class="flex-1 text-center group cursor-default">
+                <div class="w-16 h-16 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500 group-hover:bg-blue-500 transition-colors">
+                    <span class="text-2xl">📈</span>
+                </div>
+                <h4 class="font-bold mb-2">금리의 기계적 상승</h4>
+                <p class="text-xs text-gray-400 px-4">채권 투매로 가격 하락 및 금리 급등 (수급 불균형)</p>
+            </div>
+        </div>
+        
+        <div class="mt-12 p-6 bg-white/5 rounded-2xl border border-white/10 text-center">
+            <p class="text-sm font-medium">결론: 이는 미국 내부의 경제 파산 신호가 아니라, <span class="text-blue-400">외생적 자본 이동의 몸살</span>입니다.</p>
+        </div>
+    </section>
+
+    <!-- Section 3: Beige Book Heatmap -->
+    <section id="beigebook" class="mb-20">
+        <div class="mb-10 text-center">
+            <h2 class="text-2xl font-bold mb-4">연준 베이지북: 혼조세의 미세 구조</h2>
+            <p class="text-gray-600">현재 경제는 '소비 둔화 속 인프라 독주' 상태입니다.</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="glass-card p-6 rounded-2xl text-center">
+                <div class="text-red-500 text-3xl mb-4">🛒</div>
+                <h3 class="font-bold mb-2">소비</h3>
+                <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-red-100 text-red-600 rounded mb-3 inline-block">둔화 흐름</span>
+                <p class="text-xs text-gray-500">필수재 중심 소비, 중산층 지출 감소 뚜렷</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl text-center">
+                <div class="text-green-500 text-3xl mb-4">🏗️</div>
+                <h3 class="font-bold mb-2">제조업</h3>
+                <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-600 rounded mb-3 inline-block">강력 성장</span>
+                <p class="text-xs text-gray-500">AI 데이터센터 인프라 및 국방 생산 강세</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl text-center">
+                <div class="text-blue-500 text-3xl mb-4">👥</div>
+                <h3 class="font-bold mb-2">고용</h3>
+                <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-600 rounded mb-3 inline-block">연착륙 중</span>
+                <p class="text-xs text-gray-500">선별 채용 및 완만한 임금 상승, 정체 상태</p>
+            </div>
+            <div class="glass-card p-6 rounded-2xl text-center">
+                <div class="text-yellow-600 text-3xl mb-4">🔥</div>
+                <h3 class="font-bold mb-2">물가</h3>
+                <span class="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-yellow-100 text-yellow-600 rounded mb-3 inline-block">재상승 압력</span>
+                <p class="text-xs text-gray-500">중동발 유가/물류비 영향, 인플레 불씨</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Gamma & Market Microstructure -->
+    <section id="gamma" class="mb-20">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            <div>
+                <h2 class="text-2xl font-bold mb-6">폭락의 가속 페달: 음수 감마(Negative Gamma)</h2>
+                <div class="space-y-6">
+                    <p class="text-gray-600 leading-relaxed">
+                        재료보다 수급이 가격을 결정하는 구간입니다. 현재 시장은 <strong>음수 감마 구간</strong>에 진입해 있어, 주가 하락 시 딜러들이 헷지를 위해 기계적으로 현물을 더 팔아야 합니다.
+                    </p>
+                    <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                        <h4 class="font-bold text-blue-800 mb-3 underline decoration-blue-300">하락의 증폭 원리</h4>
+                        <ul class="text-sm space-y-3 text-blue-900">
+                            <li class="flex items-start"><span class="mr-2">⏺</span> 주가 1% 조정 → 딜러의 기계적 매도 추가</li>
+                            <li class="flex items-start"><span class="mr-2">⏺</span> 하락폭 3~4%로 확대 (수급 증폭기)</li>
+                            <li class="flex items-start"><span class="mr-2">⏺</span> 만기가 다가올수록 감마 값 기하급수적 상승</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="glass-card p-8 rounded-3xl">
+                <h4 class="text-center font-bold mb-6">Gamma Acceleration Simulator</h4>
+                <div class="space-y-8">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-4">시장 하락폭 조절 (Market Drop)</label>
+                        <input type="range" id="dropSlider" min="0" max="100" value="10" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                        <div class="flex justify-between text-xs text-gray-400 mt-2">
+                            <span>정상 조정</span>
+                            <span>패닉 투매</span>
+                        </div>
+                    </div>
+                    <div class="p-6 bg-gray-50 rounded-xl space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">실제 지수 하락:</span>
+                            <span id="actualDropText" class="font-bold text-lg text-gray-900">-1.0%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-blue-600 font-semibold">딜러 추가 매도 압력:</span>
+                            <span id="gammaPressureText" class="font-bold text-lg text-blue-600">0.0x</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-4 rounded-full overflow-hidden">
+                            <div id="gammaBar" class="bg-blue-600 h-full transition-all duration-300" style="width: 10%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Geopolitics & June Macroeconomic Calendar -->
+    <section id="geopolitics" class="mb-20">
+        <div class="mb-10 text-center">
+            <h2 class="text-2xl font-bold mb-4 flex items-center justify-center">
+                <span class="mr-2 text-blue-600">05.</span> 지정학 리스크 & 6월 거시 경제 일정
+            </h2>
+            <p class="text-gray-600 max-w-2xl mx-auto">
+                중동의 지정학적 위기 속에서 미국 및 국내 자산 시장의 방향성을 기계적으로 결정지을 2026년 6월 핵심 경제 지표 및 만기 스케줄입니다.
+            </p>
+        </div>
+
+        <!-- Geopolitical Status Panel -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="glass-card p-5 rounded-2xl border-l-4 border-red-500">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded-full">위험 (High)</span>
+                    <span class="text-xl">⚔️</span>
+                </div>
+                <h4 class="font-bold text-gray-800">중동 군사 분쟁 전선</h4>
+                <p class="text-xs text-gray-500 mt-1">이스라엘-이란-헤즈볼라 전장 마찰 유지 및 정제유 시설 지정학 불안 고착화.</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl border-l-4 border-yellow-500">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-yellow-600 bg-yellow-50 px-2.5 py-1 rounded-full">경고 (Warning)</span>
+                    <span class="text-xl">🛢️</span>
+                </div>
+                <h4 class="font-bold text-gray-800">브렌트유 유가 추이</h4>
+                <p class="text-xs text-gray-500 mt-1">배럴당 100달러 돌파 테스트. 원유 수입국들의 외환보유액 환율 방어 마찰점 형성.</p>
+            </div>
+            <div class="glass-card p-5 rounded-2xl border-l-4 border-blue-500">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">보통 (Moderate)</span>
+                    <span class="text-xl">🚢</span>
+                </div>
+                <h4 class="font-bold text-gray-800">미-중 무역 관세 갈등</h4>
+                <p class="text-xs text-gray-500 mt-1">첨단 테크 및 친환경 제조 관세 전선. 글로벌 공급망 물류 비용 불안 자극.</p>
+            </div>
+        </div>
+
+        <!-- Calendar Tabs -->
+        <div class="glass-card p-6 rounded-3xl">
+            <div class="flex space-x-2 border-b border-gray-100 pb-4 mb-6">
+                <button id="tab-all" class="calendar-tab px-4 py-2 text-sm font-bold rounded-lg bg-blue-600 text-white transition-all">전체 일정</button>
+                <button id="tab-us" class="calendar-tab px-4 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all">미국 일정</button>
+                <button id="tab-kr" class="calendar-tab px-4 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-all">한국 일정</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="calendar-grid">
+                <!-- June 2 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-gray-100 bg-white hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="jolts">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">미국 (US)</span>
+                        <span class="text-xs text-gray-400 font-semibold">06/02 <span class="text-blue-500">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-gray-800 text-sm">미 4월 JOLTS (구인구직 보고서)</h5>
+                    <p class="text-xs text-gray-500 mt-1">노동시장 초과수요 완화 강도 및 연준 긴축 유지 명분 탐색.</p>
+                </div>
+                <!-- June 3 -->
+                <div class="calendar-item kr cursor-pointer p-4 rounded-xl border border-gray-100 bg-white hover:border-green-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="kr" data-event-id="bok">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">한국 (KR)</span>
+                        <span class="text-xs text-gray-400 font-semibold">06/03 <span class="text-green-500">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-gray-800 text-sm">한국은행 기준금리 결정 발표</h5>
+                    <p class="text-xs text-gray-500 mt-1">기준금리 2.5% 동결 결정. 환율 1550원 위협에 따른 총재 구두개입 및 긴축 유지 발언 체크.</p>
+                </div>
+                <!-- June 5 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-gray-100 bg-white hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="nfp">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">미국 (US)</span>
+                        <span class="text-xs text-gray-400 font-semibold">06/05 <span class="text-blue-500">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-gray-800 text-sm">미 5월 비농업 고용보고서 (NFP)</h5>
+                    <p class="text-xs text-gray-500 mt-1">시장의 예측치를 깨는 고용 서프라이즈 발생 시 추가 금리 인상 기대 발작 가속화 요인.</p>
+                </div>
+                <!-- June 10 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-red-100 bg-red-50/10 hover:border-red-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="cpi">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">미국 (US) ★★★</span>
+                        <span class="text-xs text-red-500 font-bold">06/10 <span class="text-red-400">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-red-900 text-sm">미 5월 소비자물가지수 (CPI) 발표</h5>
+                    <p class="text-xs text-red-700 mt-1">중동발 유가 급등과 물류 비용 상승이 실질 인플레이션 재점화를 일으켰는지 가르는 핵심 지표.</p>
+                </div>
+                <!-- June 11 -->
+                <div class="calendar-item kr cursor-pointer p-4 rounded-xl border border-red-100 bg-red-50/10 hover:border-red-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="kr" data-event-id="kr_witch">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">한국 (KR) ★★★</span>
+                        <span class="text-xs text-red-500 font-bold">06/11 <span class="text-red-400">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-red-900 text-sm">국내 선물·옵션 동시 만기일 (네 마녀의 날)</h5>
+                    <p class="text-xs text-red-700 mt-1">파생 수급 청산 및 환율 변동성 폭주 속 원화 표시 자산 외국인 리밸런싱 극대화 시점.</p>
+                </div>
+                <!-- June 11 PPI -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-gray-100 bg-white hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="ppi">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">미국 (US)</span>
+                        <span class="text-xs text-gray-400 font-semibold">06/11 <span class="text-blue-500">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-gray-800 text-sm">미 5월 생산자물가지수 (PPI) 발표</h5>
+                    <p class="text-xs text-gray-500 mt-1">도매 물가 압력 추적을 통한 기업 원가 압박 및 마진율 훼손 강도 측정.</p>
+                </div>
+                <!-- June 16~17 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-red-100 bg-red-50/10 hover:border-red-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="fomc">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">미국 (US) ★★★</span>
+                        <span class="text-xs text-red-500 font-bold">06/16~17 <span class="text-red-400">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-red-900 text-sm">연준 FOMC 금리 결정 및 성명서</h5>
+                    <p class="text-xs text-red-700 mt-1">점도표 업데이트 및 고금리 장기 유지(Higher for Longer) 강도 확증. 매파적 포워드 가이던스 확인 주간.</p>
+                </div>
+                <!-- June 18 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-red-100 bg-red-50/10 hover:border-red-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="us_witch">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">미국 (US) ★★★</span>
+                        <span class="text-xs text-red-500 font-bold">06/18 <span class="text-red-400">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-red-900 text-sm">미 선물·옵션 동시 만기일 (마녀의 날)</h5>
+                    <p class="text-xs text-red-700 mt-1">19일 공휴일 휴장으로 인해 18일 집중 청산. 음수 감마 포지션의 강제 롤오버 및 변동성 가속 피크.</p>
+                </div>
+                <!-- June 19 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-gray-100 bg-gray-50 hover:border-gray-300 hover:shadow-md hover:-translate-y-0.5 transition-all opacity-80" data-region="us" data-event-id="juneteenth">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-gray-600 bg-gray-200 px-2 py-0.5 rounded">미국 (US)</span>
+                        <span class="text-xs text-gray-400 font-semibold">06/19 <span class="text-gray-500">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-gray-600 text-sm">준틴스(Juneteenth) 연방 공휴일 휴장</h5>
+                    <p class="text-xs text-gray-500 mt-1">미국 자산 시장 전면 휴장. 파생 수급 변동성 일시정지.</p>
+                </div>
+                <!-- June 22 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-red-100 bg-red-50/10 hover:border-red-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="wti_expiry">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">미국 (US) ★★★</span>
+                        <span class="text-xs text-red-500 font-bold">06/22 <span class="text-red-400">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-red-900 text-sm">WTI 원유 6월 인도물 선물 만기일</h5>
+                    <p class="text-xs text-red-700 mt-1">쿠싱 실물 재고 바닥(2240만 배럴)과 연결된 매도 세력의 기계적 숏스퀴즈 발생 가능 변곡점.</p>
+                </div>
+                <!-- June 25 -->
+                <div class="calendar-item us cursor-pointer p-4 rounded-xl border border-gray-100 bg-white hover:border-blue-300 hover:shadow-md hover:-translate-y-0.5 transition-all" data-region="us" data-event-id="pce">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">미국 (US)</span>
+                        <span class="text-xs text-gray-400 font-semibold">06/25 <span class="text-blue-500">🔍상세보기</span></span>
+                    </div>
+                    <h5 class="font-bold text-gray-800 text-sm">미 1분기 GDP 확정치 / 5월 개인소비지출(PCE)</h5>
+                    <p class="text-xs text-gray-500 mt-1">연준 선호 물가 지표 발표를 통한 거시경제 가속 여부 확인.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Oil Supply & Key Dates -->
+    <section id="roadmap" class="mb-20">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="glass-card p-8 rounded-3xl border-l-8 border-yellow-500">
+                <h3 class="text-xl font-bold mb-6 flex items-center">
+                    <span class="mr-2">🛢️</span> 원유 시장 3대 톱니바퀴
+                </h3>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="font-semibold text-gray-700">쿠싱(Cushing) 실물 재고</span>
+                            <span class="text-red-600 font-bold">위험 (2,240만 배럴)</span>
+                        </div>
+                        <div class="w-full bg-gray-200 h-2 rounded-full">
+                            <div class="bg-red-500 h-full rounded-full" style="width: 25%;"></div>
+                        </div>
+                        <p class="text-[11px] text-gray-400 mt-1">운영 최저선 근접, 공급 마비 우려 증폭</p>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-xl text-sm">
+                        <p class="mb-2"><strong>옵션 프리미엄:</strong> 콜 수요가 풋을 압도</p>
+                        <p><strong>만기일 숏스퀴즈:</strong> 6월물 만기 전 실물 확보 경쟁</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-8 rounded-3xl border-l-8 border-blue-500">
+                <h3 class="text-xl font-bold mb-6 flex items-center">
+                    <span class="mr-2">📅</span> 매크로 변곡점 캘린더
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-center p-3 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100">
+                        <div class="w-12 text-center font-bold text-blue-600 border-r border-blue-100 mr-4">
+                            06/11
+                        </div>
+                        <div class="text-sm">국내 선물·옵션 만기 (KOSPI 변동성)</div>
+                    </div>
+                    <div class="flex items-center p-3 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100">
+                        <div class="w-12 text-center font-bold text-blue-600 border-r border-blue-100 mr-4">
+                            06/18
+                        </div>
+                        <div class="text-sm">미국 마녀의 날 (Juneteenth 전일 집중)</div>
+                    </div>
+                    <div class="flex items-center p-3 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100">
+                        <div class="w-12 text-center font-bold text-blue-600 border-r border-blue-100 mr-4">
+                            06/22
+                        </div>
+                        <div class="text-sm font-bold">WTI 원유 선물 만기 (변동성 피크 예상)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 8: Interactive Glossary (Only visible when clicking "용어 사전") -->
+    <section id="glossary" class="hidden mb-20">
+        <div class="mb-10 text-center">
+            <span class="px-2.5 py-1 text-xs font-bold tracking-wider text-indigo-600 bg-indigo-50 rounded-full inline-block mb-2">MACRO GLOSSARY</span>
+            <h2 class="text-3xl font-extrabold text-gray-900">거시경제 및 파생 수급 용어 사전</h2>
+            <p class="text-gray-500 max-w-2xl mx-auto mt-2">
+                현재 대폭락 장세의 핵심 변수인 연준 부채 계정과 파생 헷지 수급 원리들을 한곳에 집대성했습니다.
+            </p>
+            
+            <!-- Glossary Search Bar -->
+            <div class="max-w-md mx-auto mt-6 relative">
+                <input type="text" id="glossarySearchInput" placeholder="알고 싶은 용어나 키워드를 검색하세요... (예: 감마, RRP)" class="w-full px-4 py-3 pl-11 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white shadow-sm">
+                <span class="absolute left-4 top-3.5 text-gray-400">🔍</span>
+            </div>
+        </div>
+
+        <!-- AI Custom Term Input Bar -->
+        <div class="max-w-md mx-auto mb-8 p-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl flex gap-2 items-center">
+            <input type="text" id="aiGlossaryInput" placeholder="사전에 없는 나만의 용어를 AI로 직접 추가해보세요..." class="flex-1 px-3.5 py-2.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white">
+            <button id="aiGlossaryBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-4 py-3 rounded-xl transition-all shadow-sm flex items-center gap-1.5 whitespace-nowrap">
+                <span>✨ AI 생성</span>
+            </button>
+        </div>
+
+        <!-- Glossary Empty Search State with AI Call-To-Action -->
+        <div id="glossaryEmptyState" class="hidden text-center max-w-md mx-auto p-8 bg-gray-50 border border-dashed border-gray-200 rounded-2xl mb-8">
+            <p class="text-sm text-gray-500 mb-3">검색 결과가 사전에 정의되어 있지 않습니다.</p>
+            <button id="aiGenerateSearchBtn" class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md">
+                <span>✨ Gemini AI로 '</span><span id="searchQueryText" class="font-bold underline"></span><span>' 해설 생성하기</span>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="glossary-grid">
+            <!-- TGA -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="tga 재무부 일반계좌 세수 발행 유동성">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-red-50 text-red-600 rounded-xl font-bold text-sm">TGA</span>
+                    <h4 class="font-bold text-gray-900 text-lg">재무부 일반계좌 <span class="text-xs text-gray-400 font-normal">Treasury General Account</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    미국 재무부가 연방준비은행(Fed)에 가지고 있는 정부의 당좌수표 계좌입니다. 세금을 걷거나 국채를 발행하면 이 통장 잔고가 늘어납니다. TGA 잔고가 증가한다는 것은 시중의 달러 현금이 재무부 금고로 빨려 들어감을 뜻하므로 시장 유동성에는 <strong>긴축 효과(달러 흡수)</strong>를 가집니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: 최근 2개년 동안 재무부가 재정 버퍼를 위해 TGA 잔고를 적극 늘리며 지급준비금에 하방 압력을 주었습니다.
+                </div>
+            </div>
+
+            <!-- RRP -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="rrp 역레포 mmf 연준 유동성 버퍼">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-yellow-50 text-yellow-600 rounded-xl font-bold text-sm">RRP</span>
+                    <h4 class="font-bold text-gray-900 text-lg">역환매조건부채권 (역레포) <span class="text-xs text-gray-400 font-normal">Reverse Repurchase Agreement</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    연준이 시중 자금(주로 MMF)을 흡수하고 그 대가로 하루 동안 미국 국채를 담보로 준 뒤 이자를 지급하는 제도입니다. 시중 유동성이 과도할 때 돈을 임시로 묶어놓는 '유동성 대형 댐' 역할을 해왔습니다. 이 잔고가 줄어들면 묶여있던 자금이 국채 시장 등으로 공급됩니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: 연준의 양적긴축(QT) 타격을 그동안 RRP 잔고 감소가 대신 흡수해 주었으나, 현재 바닥에 도달해 방어벽 수명이 다했습니다.
+                </div>
+            </div>
+
+            <!-- Reserves -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="reserves 지급준비금 시중 은행 유동성 신용">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-blue-50 text-blue-600 rounded-xl font-bold text-sm">Reserves</span>
+                    <h4 class="font-bold text-gray-900 text-lg">은행 지급준비금 <span class="text-xs text-gray-400 font-normal">Bank Reserves</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    시중 은행들이 고객의 예금 인출 요구에 대비하고 결제망의 안전을 지키기 위해 연방준비은행에 의무적 혹은 자발적으로 예치해 둔 현금 자산입니다. 시중 은행의 실제 대출 공급 및 레버리지 체력을 결정하는 <strong>가장 직접적이고 핵심적인 유동성의 실체</strong>입니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: RRP 버퍼가 고갈된 환경에서 TGA 잔고가 쌓이거나 국채 매도가 발생하면 이 핵심 지급준비금이 직접 감소해 단기 자금 시장 변동성을 유발합니다.
+                </div>
+            </div>
+
+            <!-- Negative Gamma -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="gamma 음수 감마 헷지 마켓메이커 딜러 가속기 폭락">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-purple-50 text-purple-600 rounded-xl font-bold text-sm">Gamma</span>
+                    <h4 class="font-bold text-gray-900 text-lg">음수 감마 <span class="text-xs text-gray-400 font-normal">Negative Gamma</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    옵션 시장에서 기초자산 가격이 변할 때 옵션의 위험도(델타)가 변하는 속도를 '감마'라고 합니다. 이 중 <strong>음수 감마 구간</strong>은 주가가 하락할 때 마켓메이커(딜러)들이 리스크를 중립으로 맞추기 위해 보유 주식이나 선물을 기계적으로 '더 많이 투매(Sell Low)'해야 하는 구간입니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: 펀더멘털 악재가 원래 1% 조정 폭이었다 하더라도, 음수 감마 구간에 들어가면 딜러들의 기계적 매도로 인해 3~4% 이상의 대폭락으로 증폭됩니다.
+                </div>
+            </div>
+
+            <!-- Cushing Inventory -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="cushing 쿠싱 재고 원유 wti 만기 인도 고갈">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-amber-50 text-amber-600 rounded-xl font-bold text-sm">Cushing</span>
+                    <h4 class="font-bold text-gray-900 text-lg">쿠싱 원유 재고 <span class="text-xs text-gray-400 font-normal">Cushing Crude Inventory</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    미국 서부텍사스산 원유(WTI) 선물의 실물 결제 및 인도 지점인 오클라호마주 쿠싱 지역의 원유 저장소 물량입니다. 이 잔고가 2,000만~2,200만 배럴선 이하로 떨어지면, 파이프라인 압력 유지와 청소용 필수 잔류 물량 때문에 사실상 <strong>물리적 고갈(Tank Bottom)</strong>로 간주됩니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: 현재 쿠싱 재고가 운영 마지노선인 2,240만 배럴까지 하강하여, 만기를 맞이한 원유 숏 세력의 실물 인도 부담을 자극하고 있습니다.
+                </div>
+            </div>
+
+            <!-- Short Squeeze -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="short squeeze 숏스퀴즈 숏커버링 매도 청산 원유 폭등">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-sm">Squeeze</span>
+                    <h4 class="font-bold text-gray-900 text-lg">숏스퀴즈 <span class="text-xs text-gray-400 font-normal">Short Squeeze</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    가격 하락에 베팅하며 자산을 차입 매도(공매도/숏)했던 투자자들이 가격 상승이나 실물 자산 고갈 압박에 몰려 더 큰 손실을 막기 위해 시장가로 급하게 되사는(숏커버링) 현상입니다. 이 무차별적 강제 매수세가 일시에 몰리면서 가격이 브레이크 없이 오버슈팅 폭등을 일으키게 됩니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: 6월 WTI 원유 인도물 만기가 가까워지는 시점에 쿠싱 재고가 고갈되면 매도 세력의 실물 쇼크발 숏스퀴즈 가능성이 고조됩니다.
+                </div>
+            </div>
+
+            <!-- Dollar Smile -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="dollar smile 달러 스마일 강달러 안전자산 독주 위험회피">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-teal-50 text-teal-600 rounded-xl font-bold text-sm">Smile</span>
+                    <h4 class="font-bold text-gray-900 text-lg">달러 스마일 <span class="text-xs text-gray-400 font-normal">Dollar Smile</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    달러화 가치가 '미국 경제가 나 홀로 압도적으로 성장하여 금리가 높을 때(우측 꼬리)' 상승할 뿐만 아니라, 반대로 '글로벌 전반의 불확실성과 경기 둔화 우려로 안전자산 사재기(Risk-off)가 발생할 때(좌측 꼬리)'에도 강세를 보이며 미소 짓는 형상을 뜻하는 국제 금융 현상입니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: 유가 급등 쇼크가 진정되며 유가가 하락 국면을 타더라도, 글로벌 경기 불안 심리로 인해 '달러 스마일'의 좌측 영역이 발동되어 환율이 고공행진을 보일 수 있습니다.
+                </div>
+            </div>
+
+            <!-- Quadruple Witching Day -->
+            <div class="glossary-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-indigo-300 hover:shadow-md transition-all" data-keywords="witching 네 마녀의 날 만기 롤오버 청산 파생 수급 정산">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="p-2.5 bg-zinc-100 text-zinc-700 rounded-xl font-bold text-sm">Witch</span>
+                    <h4 class="font-bold text-gray-900 text-lg">선물·옵션 동시 만기일 (네 마녀의 날) <span class="text-xs text-gray-400 font-normal">Quadruple Witching Day</span></h4>
+                </div>
+                <p class="text-sm text-gray-600 leading-relaxed">
+                    주가지수 선물·옵션, 그리고 개별주식 선물·옵션의 만기일이 동시에 겹치는 분기별 정산일입니다. 만기를 기점으로 파생상품 시장 딜러들과 대형 헤지펀드들이 수조 달러 규모의 기존 계약을 청산하거나 다음 분기물로 강제 롤오버해야 하므로 순수한 수급 쏠림 변동성이 폭발합니다.
+                </p>
+                <div class="mt-4 pt-3 border-t border-gray-50 text-xs text-indigo-600 font-medium">
+                    📍 매크로 연결고리: 6월 18일 미 동시 만기 주간 전후로 딜러들의 음수 감마 헤지 청산 및 롤오버 수급이 쏟아져 시장의 인위적 오버슈팅 가격 왜곡을 절정으로 치닫게 만듭니다.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Gemini AI Macro Co-Pilot Section -->
+    <section id="ai-terminal" class="mb-20">
+        <div class="glass-card rounded-3xl p-6 md:p-8 border-2 border-blue-500/20 ai-pulse bg-gradient-to-br from-blue-50/50 to-indigo-50/30">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 pb-6 border-b border-blue-100">
+                <div>
+                    <span class="px-2.5 py-1 text-xs font-bold tracking-wider text-blue-600 bg-blue-100 rounded-full inline-block mb-2">Gemini 3.1 Flash Grounding</span>
+                    <h2 class="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                        <span>🤖</span> Gemini AI 실시간 거시분석 코파일럿
+                    </h2>
+                    <p class="text-xs text-gray-500 mt-1">구글 실시간 검색 및 파생 수급 구조(감마/RRP) 결합 솔루션</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="aiSearchToggle" checked class="sr-only peer">
+                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                        <span class="ml-2 text-xs font-bold text-gray-700">Google Search 연동</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Chat Container -->
+            <div class="bg-white/80 rounded-2xl border border-blue-100 overflow-hidden mb-6 flex flex-col h-[400px]">
+                <!-- Message Log -->
+                <div id="aiChatLog" class="flex-1 overflow-y-auto p-4 space-y-4 text-sm leading-relaxed scrollbar-thin scrollbar-thumb-gray-200">
+                    <div class="bg-blue-50/50 text-blue-900 p-4 rounded-xl border border-blue-100/50">
+                        <p class="font-bold text-xs uppercase tracking-wide text-blue-500 mb-1">Co-Pilot Guide</p>
+                        안녕하세요! 시장의 단편적인 리스크 소음 대신 **실제 구글 검색 결과**와 **연준 계정 유동성 데이터**, 그리고 **옵션 감마 수급 모델**을 종합적으로 융합 분석해 드리는 Gemini 코파일럿입니다. 아래 프리셋 가이드를 선택하시거나 궁금한 시나리오를 질문해 보세요.
+                    </div>
+                </div>
+
+                <!-- Chat Citations Display Area -->
+                <div id="chatCitationsArea" class="hidden px-4 py-2 border-t border-gray-100 bg-gray-50/50">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">지식 그라운딩 출처 (Citations):</p>
+                    <div id="chatCitationsContainer" class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto"></div>
+                </div>
+
+                <!-- Loading State overlay -->
+                <div id="aiLoadingOverlay" class="hidden px-4 py-3 bg-blue-50/30 border-t border-blue-100 items-center gap-3">
+                    <div class="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span id="aiLoadingText" class="text-xs text-blue-800 font-semibold animate-pulse">실시간 시장 지표 데이터 수집 중...</span>
+                </div>
+            </div>
+
+            <!-- Suggestion Badges -->
+            <div class="mb-4 flex flex-wrap gap-2">
+                <button onclick="sendPresetPrompt('현재 이란 지정학적 긴장과 WTI 유가 공급 리스크의 실시간 현황을 검색해줘')" class="text-xs bg-white hover:bg-blue-50 text-gray-700 border border-gray-200 rounded-lg px-3 py-2 transition-all font-medium">🛢️ 중동 리스크 & WTI 실시간 검색</button>
+                <button onclick="sendPresetPrompt('음수 감마 구간에서 6월 18일 선물옵션 동시만기일(마녀의 날)이 시장에 줄 실질 수급 충격을 요약해줘')" class="text-xs bg-white hover:bg-blue-50 text-gray-700 border border-gray-200 rounded-lg px-3 py-2 transition-all font-medium">⚡ 음수 감마 & 마녀의 날 파장</button>
+                <button onclick="sendPresetPrompt('원-달러 환율이 1,550원 저항선에 근접했을 때, 한국 반도체 수출 및 자본 유출 시나리오를 분석해줘')" class="text-xs bg-white hover:bg-blue-50 text-gray-700 border border-gray-200 rounded-lg px-3 py-2 transition-all font-medium">💵 환율 1550원 위협 & 반도체 충격</button>
+            </div>
+
+            <!-- Form -->
+            <div class="flex gap-2">
+                <input type="text" id="aiUserInput" placeholder="거시경제 수급 분석이나 실시간 시장 변화 시나리오를 물어보세요..." class="flex-1 px-4 py-3 text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+                <button id="sendAiBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-6 py-3 rounded-xl transition-all shadow-md hover:shadow-lg flex items-center gap-2">
+                    <span>분석 실행</span>
+                    <span class="text-xs">➔</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Deep Dive Q&A -->
+    <section class="max-w-4xl mx-auto mb-20">
+        <h2 class="text-2xl font-bold mb-8 text-center">Deep Dive Q&A</h2>
+        <div class="space-y-4">
+            <details class="group bg-white rounded-2xl border border-gray-100 shadow-sm" open>
+                <summary class="flex justify-between items-center p-6 cursor-pointer font-semibold list-none">
+                    Q1. 지금의 폭락은 정말 경기 침체 신호가 아닌가요?
+                    <span class="transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-6 pb-6 text-gray-600 text-sm leading-relaxed border-t border-gray-50 pt-4">
+                    네, 경제의 '기어(체력)'는 고장 나지 않았지만, '엔진오일(달러 유동성)'이 일시적으로 뻑뻑해진 상태입니다. 실제 침체기라면 고용이 무너지고 소비가 전면 중단되어야 하지만, 현재 AI 인프라 투자와 제조업은 강력하게 버티고 있습니다. 이번 변동성은 외생적 충격에 의한 수급 불균형의 몸살입니다.
+                </div>
+            </details>
+            <details class="group bg-white rounded-2xl border border-gray-100 shadow-sm">
+                <summary class="flex justify-between items-center p-6 cursor-pointer font-semibold list-none">
+                    Q2. 유가가 하락해도 환율이 높은 이유는 무엇인가요?
+                    <span class="transition-transform group-open:rotate-180">▼</span>
+                </summary>
+                <div class="px-6 pb-6 text-gray-600 text-sm leading-relaxed border-t border-gray-50 pt-4">
+                    유가 하락이 오히려 '미국 경제의 독주'를 보장하기 때문입니다. 에너지 자립국인 미국은 유가가 내리면 비용이 줄어 펀더멘털이 더 강해집니다. 또한 시장이 글로벌 경기 둔화를 우려해 안전 자산인 달러 사재기에 나서는 '달러 스마일' 현상이 작동하고 있습니다.
+                </div>
+            </details>
+        </div>
+    </section>
+
+</main>
+
+<!-- Event Details Drawer Overlay -->
+<div id="drawerOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] transition-opacity duration-300 opacity-0 pointer-events-none"></div>
+
+<!-- Event Details Drawer Panel (Slide-Over Drawer) -->
+<div id="eventDrawer" class="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl z-[101] overflow-y-auto transform translate-x-full transition-transform duration-300 flex flex-col border-l border-gray-200">
+    <!-- Close & Header Area -->
+    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+        <div class="flex items-center space-x-2">
+            <span id="drawerRegionBadge" class="text-xs font-bold px-2.5 py-1 rounded">국가</span>
+            <span id="drawerImportanceBadge" class="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">중요도</span>
+        </div>
+        <button id="closeDrawer" class="text-gray-400 hover:text-gray-700 p-2 rounded-full hover:bg-gray-200/50 transition-all text-xl font-bold">&times;</button>
+    </div>
+
+    <!-- Content Area -->
+    <div class="p-8 flex-1 space-y-6">
+        <div>
+            <span id="drawerDate" class="text-xs font-bold text-blue-600 tracking-wide uppercase">DATE</span>
+            <h3 id="drawerTitle" class="text-2xl font-bold text-gray-900 mt-1 leading-tight">이벤트 타이틀</h3>
+            <p id="drawerSummary" class="text-sm text-gray-500 mt-3 leading-relaxed border-l-4 border-blue-500 pl-3">핵심 한 줄 요약</p>
+        </div>
+
+        <!-- NEW: Dynamic Gemini AI Insight Button Inside Drawer -->
+        <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 p-4 rounded-xl flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-blue-800 flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 bg-blue-600 rounded-full animate-ping"></span> Gemini AI 실시간 리포팅
+                </span>
+                <button id="drawerAiBtn" class="text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm">AI 실시간 수급브리핑 생성</button>
+            </div>
+            
+            <div id="drawerAiBox" class="hidden text-xs text-gray-700 leading-relaxed bg-white p-3 rounded-lg border border-blue-100/60 max-h-48 overflow-y-auto">
+                <div id="drawerAiLoader" class="flex items-center gap-2 text-blue-600">
+                    <div class="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <span class="font-semibold animate-pulse">실시간 컨센서스 및 외환 보유 자료 수집 중...</span>
+                </div>
+                <div id="drawerAiResult" class="whitespace-pre-line text-gray-800 leading-relaxed font-medium"></div>
+                <!-- Citation Sources inside Drawer -->
+                <div id="drawerAiCitations" class="hidden mt-2 pt-2 border-t border-gray-100 text-[10px] text-gray-400">
+                    <p class="font-bold uppercase mb-1">인증 자료 출처 (Google Attributions):</p>
+                    <div id="drawerAiCitationsList" class="flex flex-wrap gap-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Block 1: Mechanism -->
+        <div class="space-y-2">
+            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider">시장 영향력 및 수급 연쇄 시나리오</h4>
+            <p id="drawerMechanism" class="text-sm text-gray-700 leading-relaxed bg-gray-50 p-4 rounded-xl border border-gray-100">연쇄 분석 내용</p>
+        </div>
+
+        <!-- Block 2: Scenarios Grid -->
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div class="bg-emerald-50/50 border border-emerald-100 p-4 rounded-xl">
+                <h5 class="text-xs font-bold text-emerald-800 uppercase tracking-wider flex items-center mb-1">
+                    <span class="mr-1.5">🟢</span> 낙관론 시나리오 (Bull)
+                </h5>
+                <p id="drawerBull" class="text-xs text-emerald-950 leading-relaxed">내용</p>
+            </div>
+            <div class="bg-red-50/50 border border-red-100 p-4 rounded-xl">
+                <h5 class="text-xs font-bold text-red-800 uppercase tracking-wider flex items-center mb-1">
+                    <span class="mr-1.5">🔴</span> 위험 요인 (Bear)
+                </h5>
+                <p id="drawerBear" class="text-xs text-red-950 leading-relaxed">내용</p>
+            </div>
+        </div>
+
+        <!-- Block 3: Action Plan -->
+        <div class="space-y-2 bg-blue-50/40 border border-blue-100 p-5 rounded-2xl">
+            <h4 class="text-xs font-bold text-blue-800 uppercase tracking-wider flex items-center">
+                <span class="mr-1.5">🧭</span> 현명한 낙관론자의 행동 지침
+            </h4>
+            <p id="drawerAction" class="text-sm text-blue-900 leading-relaxed">행동 강령</p>
+        </div>
+
+        <!-- Block 4: Historical Data Chart (Dynamic) -->
+        <div id="drawerChartContainer" class="space-y-2 border-t border-gray-100 pt-6">
+            <h4 id="drawerChartTitle" class="text-xs font-bold text-gray-400 uppercase tracking-wider">최근 12개월 추이 추적</h4>
+            <div class="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                <div class="h-48 relative">
+                    <canvas id="drawerChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer class="bg-gray-50 py-12 border-t border-gray-100">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <p class="text-sm text-gray-500 mb-4">본 리포트는 시장 데이터 및 파생 수급 구조 분석을 바탕으로 제작되었습니다.</p>
+        <div class="text-xs text-gray-400">© 2026 Macro Liquidity Analysis Dashboard. 모든 정보는 분석용으로만 제공됩니다.</div>
+    </div>
+</footer>
+
+<script>
+    let drawerChartInstance = null;
+    let selectedEventIdForAi = null; // Track currently selected event for customized drawer AI insight
+
+    /**
+     * SPA View Controller: Handles complete separation of dashboard widgets and glossary terms view
+     */
+    function switchView(targetId) {
+        const sections = document.querySelectorAll('main > section');
+        const heroSection = document.getElementById('main-hero');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        // Update Nav Menu Highlights
+        navItems.forEach(item => {
+            item.classList.remove('active', 'text-blue-600', 'text-indigo-600', 'font-semibold', 'border-b-2', 'border-blue-600', 'border-indigo-600');
+            item.classList.add('text-gray-500');
+        });
+
+        if (targetId === 'glossary') {
+            // Hide all dashboard modules completely
+            sections.forEach(sec => {
+                if (sec.id === 'glossary') {
+                    sec.classList.remove('hidden');
+                } else {
+                    sec.classList.add('hidden');
+                }
+            });
+            heroSection.classList.add('hidden');
+
+            // Set Glossary Nav Active
+            const glossNav = document.getElementById('nav-glossary');
+            if (glossNav) {
+                glossNav.classList.remove('text-gray-500');
+                glossNav.classList.add('active', 'text-indigo-600', 'font-semibold');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+            // Restore normal dashboard layout
+            sections.forEach(sec => {
+                if (sec.id === 'glossary') {
+                    sec.classList.add('hidden');
+                } else {
+                    sec.classList.remove('hidden');
+                }
+            });
+            heroSection.classList.remove('hidden');
+
+            // Set Target Nav Active
+            const activeNav = document.querySelector(`.nav-item[href="#${targetId}"]`);
+            if (activeNav) {
+                activeNav.classList.remove('text-gray-500');
+                activeNav.classList.add('active', 'text-blue-600', 'font-semibold');
+            }
+
+            // Scroll to the respective section block
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Main Liquidity Chart Configuration
+        const ctx = document.getElementById('liquidityChart').getContext('2d');
+        
+        const labels = [
+            '24.07', '24.08', '24.09', '24.10', '24.11', '24.12',
+            '25.01', '25.02', '25.03', '25.04', '25.05', '25.06',
+            '25.07', '25.08', '25.09', '25.10', '25.11', '25.12',
+            '26.01', '26.02', '26.03', '26.04', '26.05', '26.06'
+        ];
+
+        const liquidityData = {
+            labels: labels,
+            datasets: [
+                {
+                    label: '지급준비금 (Reserves)',
+                    data: [3410, 3380, 3420, 3390, 3450, 3400, 3380, 3350, 3410, 3390, 3370, 3350, 3300, 3280, 3320, 3290, 3250, 3210, 3180, 3150, 3190, 3140, 3120, 3080],
+                    backgroundColor: '#3b82f6',
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'RRP (역레포)',
+                    data: [1150, 1080, 980, 890, 780, 690, 610, 520, 440, 380, 320, 280, 240, 210, 180, 160, 150, 140, 130, 130, 120, 120, 110, 105],
+                    backgroundColor: '#f59e0b',
+                    stack: 'Stack 0',
+                },
+                {
+                    label: 'TGA (재무부 일반계좌)',
+                    data: [620, 640, 670, 710, 690, 730, 750, 780, 720, 740, 760, 780, 810, 830, 790, 820, 850, 880, 890, 910, 880, 920, 930, 950],
+                    backgroundColor: '#ef4444',
+                    stack: 'Stack 0',
+                }
+            ]
+        };
+
+        const chartConfig = {
+            type: 'bar',
+            data: liquidityData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { boxWidth: 10, font: { size: 10 } }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                    }
+                },
+                scales: {
+                    x: { 
+                        stacked: true, 
+                        grid: { display: false },
+                        ticks: {
+                            maxTicksLimit: 12,
+                            font: { size: 9 }
+                        }
+                    },
+                    y: { 
+                        stacked: true, 
+                        title: { display: true, text: 'Billions (USD)', font: { size: 9 } },
+                        grid: { color: '#f3f4f6' },
+                        ticks: { font: { size: 9 } }
+                    }
+                }
+            }
+        };
+
+        new Chart(ctx, chartConfig);
+
+        const tabAll = document.getElementById('tab-all');
+        const tabUs = document.getElementById('tab-us');
+        const tabKr = document.getElementById('tab-kr');
+        const items = document.querySelectorAll('.calendar-item');
+
+        function filterCalendar(region, activeTab) {
+            document.querySelectorAll('.calendar-tab').forEach(t => {
+                t.classList.remove('bg-blue-600', 'text-white', 'font-bold');
+                t.classList.add('text-gray-500', 'hover:text-blue-600', 'hover:bg-blue-50', 'font-medium');
+            });
+            activeTab.classList.remove('text-gray-500', 'hover:text-blue-600', 'hover:bg-blue-50', 'font-medium');
+            activeTab.classList.add('bg-blue-600', 'text-white', 'font-bold');
+
+            items.forEach(item => {
+                if (region === 'all') {
+                    item.style.display = 'block';
+                } else {
+                    if (item.getAttribute('data-region') === region) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        if(tabAll && tabUs && tabKr) {
+            tabAll.addEventListener('click', () => filterCalendar('all', tabAll));
+            tabUs.addEventListener('click', () => filterCalendar('us', tabUs));
+            tabKr.addEventListener('click', () => filterCalendar('kr', tabKr));
+        }
+
+        // Gamma Simulator Logic
+        const slider = document.getElementById('dropSlider');
+        const dropText = document.getElementById('actualDropText');
+        const pressureText = document.getElementById('gammaPressureText');
+        const gammaBar = document.getElementById('gammaBar');
+
+        slider.addEventListener('input', function() {
+            const val = parseInt(this.value);
+            const dropValue = (val / 10).toFixed(1);
+            dropText.innerText = `-${dropValue}%`;
+            
+            // Non-linear amplification
+            let multiplier = 1.0;
+            if (val > 30) multiplier = (1.0 + (val - 30) / 15).toFixed(1);
+            
+            pressureText.innerText = `${multiplier}x`;
+            gammaBar.style.width = `${Math.min(val * multiplier, 100)}%`;
+            
+            if (val > 60) {
+                gammaBar.classList.remove('bg-blue-600');
+                gammaBar.classList.add('bg-red-500');
+                pressureText.classList.remove('text-blue-600');
+                pressureText.classList.add('text-red-500');
+            } else {
+                gammaBar.classList.add('bg-blue-600');
+                gammaBar.classList.remove('bg-red-500');
+                pressureText.classList.add('text-blue-600');
+                pressureText.classList.remove('text-red-500');
+            }
+        });
+
+        // Calendar Event Detailed Database
+        const eventDetails = {
+            jolts: {
+                title: "미 4월 JOLTS (구인구직 보고서)",
+                date: "2026.06.02",
+                region: "미국 (US)",
+                regionColor: "bg-blue-100 text-blue-800",
+                importance: "★★☆ (높음)",
+                summary: "미국 노동 시장의 초과 수요 완화 및 식어가는 고용 체력을 측정하는 지표.",
+                mechanism: "구직자 1인당 빈 일자리 비율이 하락세를 보이면 노동 시장 열기가 완화되어 연준의 추가 금리 인상 명분을 약화시킵니다. 반면, 예상치를 대폭 상회하면 고금리 장기화 우려를 증폭시켜 미국채 10년물 금리를 위로 기계적으로 끌어올리는 금리 충격으로 변모합니다.",
+                bull: "빈 일자리 수가 시장 예상 수준(약 800만 건 이하)으로 무난하게 착륙하며 단기 임금 인플레이션 압박을 차단하는 경우.",
+                bear: "구인난 지속으로 인한 서프라이즈 발생 시 미국채 금리 급등 및 테크/성장주에 멀티플 훼손 압박 가중.",
+                action: "지표 발표 직후 미국채 10년물 금리 추이를 추적하여, 4.5% 전후의 단기 저항선 돌파 여부를 파악하고 성장주 분할 매수 타점을 정밀화하십시오.",
+                chart: {
+                    title: "미국 JOLTS 구인건수 추이 (단위: 백만 건)",
+                    labels: ['25.07', '25.08', '25.09', '25.10', '25.11', '25.12', '26.01', '26.02', '26.03', '26.04'],
+                    datasets: [{
+                        label: '구인 건수 (M)',
+                        data: [8.8, 8.6, 8.4, 8.1, 8.3, 7.9, 7.8, 8.0, 7.6, 7.4],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                }
+            },
+            bok: {
+                title: "한국은행 기준금리 결정 발표",
+                date: "2026.06.03",
+                region: "한국 (KR)",
+                regionColor: "bg-green-100 text-green-800",
+                importance: "★★☆ (높음)",
+                summary: "원화 가치 방어(고환율 대응)와 신용 팽창 저지 사이에서의 한국은행의 진퇴양난.",
+                mechanism: "원-달러 환율이 1,550원 저항선을 압박하는 상황에서 한국은행이 성급히 금리 인하 깜짝 카드를 제시하면 자본 유출(외국인 주식 매도)이 걷잡을 수 없이 심화될 리스크가 상존합니다. 따라서 기준금리를 2.5%로 철저히 묶어두고 총재 구두개입을 더해 달러 수급 쏠림을 완충하려 할 것입니다.",
+                bull: "강력한 매파적 동결 성명서 발표 및 자본 이탈 차단 구두개입으로 환율의 일시적 하향 안정화 달성.",
+                bear: "비둘기파적 뉘앙스 검출 시 환율이 1,550원 저항선을 돌파하며 외인 리밸런싱 패닉셀 자극.",
+                action: "기준금리 동결 결정 직후 한국은행 총재의 기자회견 브리핑에서 '외환 시장 개입 수위' 및 '외환보유고 안정성' 언급 강도를 체크해 원화 표시 성장자산 비중을 조절하십시오.",
+                chart: {
+                    title: "한국은행 기준금리 추이 (단위: %)",
+                    labels: ['24.08', '24.10', '24.11', '25.01', '25.02', '25.04', '25.05', '25.07', '25.08', '25.10', '25.11', '26.03'],
+                    datasets: [{
+                        label: '한국 기준금리',
+                        data: [3.50, 3.50, 3.25, 3.25, 3.00, 3.00, 3.00, 2.75, 2.75, 2.50, 2.50, 2.50],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        stepped: true
+                    }]
+                }
+            },
+            nfp: {
+                title: "미 5월 비농업 고용보고서 (NFP)",
+                date: "2026.06.05",
+                region: "미국 (US)",
+                regionColor: "bg-blue-100 text-blue-800",
+                importance: "★★★ (최고 중요)",
+                summary: "미 연준의 통화정책 전환(Pivot) 시기를 결론짓는 매월 최우선 중요 지표.",
+                mechanism: "신규 고용 건수가 강하면 긴축 종결 기대감이 무너지며 미국채 금리가 튀어 오르고, 반대로 너무 처참하게 급락하면 '경기 침체(Recession)' 내러티브가 위험 자산을 무차별적으로 투매시킵니다. 따라서 적당히 완만하게 식어가는 '골디락스(약 15만~18만 건)' 고용이 시장 반등에 가장 유리한 수급 여건을 제공합니다.",
+                bull: "신규 고용이 15만 건 내외로 안착하고 시간당 평균 임금 상승률이 전월 대비 0.2% 이하로 완만히 둔화되는 경우.",
+                bear: "고용 서프라이즈(20만 건 대폭 초과) 발생 시 추가 금리 인상 기대가 완전히 되살아나며 나스닥 등 변동성 자산 일제히 조정.",
+                action: "선물·옵션 동시 만기 주간을 불과 나흘 앞두고 터지는 대형 폭탄이므로 지표 발표 직후 당일 나스닥 롱/숏 포지션 청산 속도를 보며 방어적인 포지션을 유지하십시오.",
+                chart: {
+                    title: "미 신규 비농업 고용자 수 추이 (단위: 천 명)",
+                    labels: ['25.07', '25.08', '25.09', '25.10', '25.11', '25.12', '26.01', '26.02', '26.03', '26.04', '26.05'],
+                    datasets: [{
+                        label: '신규 고용 (K)',
+                        data: [195, 180, 165, 140, 210, 190, 175, 240, 195, 165, 152],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                }
+            },
+            cpi: {
+                title: "미 5월 소비자물가지수 (CPI)",
+                date: "2026.06.10",
+                region: "미국 (US) ★★★",
+                regionColor: "bg-red-100 text-red-800",
+                importance: "★★★ (최고 중요)",
+                summary: "중동 전쟁발 유가 수급 쇼크가 미국 경제 실물 물가로 전이되었는지 가늠하는 첫 실질 지표.",
+                mechanism: "WTI 유가 상승이 운송비 및 식료품 가격을 타고 근원 CPI(Core CPI)까지 침투했는가가 핵심 평가 요소입니다. 만약 공급 쇼크에 의한 헤드라인 수치 상승을 넘어 근원 CPI마저 뜨겁게 오르면, 시장은 이를 일시적 충격이 아닌 구조적인 스태그플레이션 경로로 해석하게 됩니다.",
+                bull: "헤드라인 유가 상승세에도 불구하고 근원 CPI가 전월 대비 0.2% 수준 이하를 지키며 유가발 전이 효과가 제한적임을 증명할 때.",
+                bear: "근원 CPI가 예상치(0.3% 이상)를 초과해 추가 금리 인상 공포 점화 및 장기 금리 할인율 상향 압박 고착화.",
+                action: "지표가 시장 예측 범위 내에 안착할 시 파생 시장의 '음수 감마 완화(양수 감마 회귀)' 시그널과 함께 나스닥 및 원화 자산의 강한 브이(V)자 기술적 반등 타점을 조준하십시오.",
+                chart: {
+                    title: "미국 소비자물가지수(CPI) 추이 (단위: 전년 동월 대비 %)",
+                    labels: ['25.07', '25.08', '25.09', '25.10', '25.11', '25.12', '26.01', '26.02', '26.03', '26.04', '26.05'],
+                    datasets: [
+                        {
+                            label: 'Headline CPI',
+                            data: [3.0, 3.2, 3.1, 3.4, 3.2, 3.1, 3.3, 3.5, 3.4, 3.3, 3.2],
+                            borderColor: '#ef4444',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Core CPI (근원)',
+                            data: [3.8, 3.7, 3.6, 3.5, 3.4, 3.5, 3.6, 3.7, 3.6, 3.5, 3.4],
+                            borderColor: '#3b82f6',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0.2
+                        }
+                    ]
+                }
+            },
+            kr_witch: {
+                title: "국내 선물·옵션 동시 만기일 (네 마녀의 날)",
+                date: "2026.06.11",
+                region: "한국 (KR) ★★★",
+                regionColor: "bg-red-100 text-red-800",
+                importance: "★★★ (최고 중요)",
+                summary: "원화 약세에 따른 외인 롤오버 및 리밸런싱 노이즈 극대화 주간.",
+                mechanism: "원-달러 환율이 1,550원에 근접함에 따라 외국인 투자자들은 추가적인 환차손을 극도로 기피합니다. 만기 주간을 전후해 선물 매도 포지션을 차월물(9월물)로 어떻게 이월(롤오버)할지 결정해야 하며, 이 과정에서 장 마감 동시호가에 기계적인 매도 프로그램 충격이 유입될 확률이 매우 큽니다.",
+                bull: "환율 압박 속에서도 외국인들이 장막판 숏커버링(선물 매도 청산)을 선택해 지수가 장후반 급반등하는 시나리오.",
+                bear: "외인들이 주식 선물을 무차별적으로 정산 및 매도 일관하며 현물 주식 매도 물량까지 연쇄 유발해 코스피 지수 하방 왜곡 가속.",
+                action: "당일 오후 2시 50분 이후 동시호가 수급 쏠림 현상을 주시하십시오. 파생 청산으로 급락한 원화 우량 테크주(반도체)는 단기 반등용 당일 저점 매수의 매력적인 기회입니다.",
+                chart: {
+                    title: "만기 주간 코스피 200 역사적 변동성 추이 (VKOSPI)",
+                    labels: ['25.06 만기', '25.09 만기', '25.12 만기', '26.03 만기', '26.06 만기 (예상)'],
+                    datasets: [{
+                        label: 'VKOSPI (Vol)',
+                        data: [15.2, 16.8, 14.5, 18.2, 22.4],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                }
+            },
+            ppi: {
+                title: "미 5월 생산자물가지수 (PPI) 발표",
+                date: "2026.06.11",
+                region: "미국 (US)",
+                regionColor: "bg-blue-100 text-blue-800",
+                importance: "★★☆ (높음)",
+                summary: "도매 물가 압력 추적을 통한 기업 원가 압박 및 마진율 훼손 강도 측정.",
+                mechanism: "제조업의 생산 비용 상승은 결국 소비자에게 가격을 넘기는 '가격 전가(Markup)'로 이어집니다. 베이지북이 지적한 '제조업 독주 속 원가 부담 상승'이 실제로 숫자로 확증될 경우, 기업 마진율 훼손과 추가 실적 가이드라인 강등 우려가 결합됩니다.",
+                bull: "수입 물가 부담에도 불구하고 공장 게이트웨이 생산 단가가 안정세를 보여 글로벌 유통망 유연성 건재를 입증할 때.",
+                bear: "원자재 및 정제유 비용 폭등이 반영되어 PPI가 서프라이즈 상승해 향후 인플레이션 2차 스파이크 우려 강화.",
+                action: "한국 동시 만기일 밤에 발표되므로 양국 수급이 동시에 교란받는 구간입니다. 당일 적극적인 매매는 지양하고 관망 스탠스를 유지하십시오.",
+                chart: {
+                    title: "미국 생산자물가지수(PPI) 추이 (단위: 전년 동월 대비 %)",
+                    labels: ['25.07', '25.08', '25.09', '25.10', '25.11', '25.12', '26.01', '26.02', '26.03', '26.04', '26.05'],
+                    datasets: [{
+                        label: 'Headline PPI',
+                        data: [1.8, 1.9, 1.7, 2.2, 2.1, 1.8, 2.0, 2.3, 2.4, 2.2, 2.0],
+                        borderColor: '#f59e0b',
+                        borderWidth: 2,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                }
+            },
+            fomc: {
+                title: "연준 FOMC 금리 결정 및 성명서",
+                date: "2026.06.16~17",
+                region: "미국 (US) ★★★",
+                regionColor: "bg-red-100 text-red-800",
+                importance: "★★★ (최고 중요)",
+                summary: "고금리 장기 유지(Higher for Longer) 강도 확증. 매파적 포워드 가이던스 확인 주간.",
+                mechanism: "단기 기준금리 동결 자체는 100%에 가깝게 선반영되어 있습니다. 관건은 연말 금리 전망 점도표(Dot Plot)입니다. 올해 금리 인하 횟수 기대치가 기존 3회에서 1~2회 혹은 아예 '동결/추가 인상 가능성'으로 후퇴하는지 확인해야 하며, 연준 의장의 발언이 매파적일수록 할인율 상방 압력이 커집니다.",
+                bull: "연준 의장이 '지정학발 유가 상승은 일시적 현상'이라며, 시장 우려와 달리 연내 2회 인하 점도표 경로를 침착히 지켜줄 때.",
+                bear: "매파적 점도표로 전격 이동(인하 횟수 전망 1회 이하 축소)하며 고금리 장기화(Higher for Longer) 경로 확정.",
+                action: "성명서 발표 직후 미국채 2년물 및 10년물 금리의 갭상승 여부를 지켜본 후, 만기 정산 주간의 본격적인 분할 매수 한도(Limit) 가격을 새로 수정 수립하십시오.",
+                chart: {
+                    title: "미국 연방기준금리 상한선 추이 (단위: %)",
+                    labels: ['24.08', '24.09', '24.11', '24.12', '25.01', '25.03', '25.06', '25.09', '25.12', '26.03', '26.06'],
+                    datasets: [{
+                        label: 'Federal Funds Rate (Upper)',
+                        data: [5.50, 5.25, 5.00, 5.00, 4.75, 4.75, 4.75, 4.50, 4.50, 4.50, 4.50],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderWidth: 2,
+                        fill: true,
+                        stepped: true
+                    }]
+                }
+            },
+            us_witch: {
+                title: "미 선물·옵션 동시 만기일 (마녀의 날)",
+                date: "2026.06.18",
+                region: "미국 (US) ★★★",
+                regionColor: "bg-red-100 text-red-800",
+                importance: "★★★ (최고 중요)",
+                summary: "19일 공휴일 휴장으로 인해 18일 집중 청산. 음수 감마 포지션의 강제 롤오버 및 변동성 가속 피크.",
+                mechanism: "미국 지수선물, 지수옵션, 개별주옵션 만기가 일괄 정산되는 날입니다. 현재 시장이 깊은 음수 감마(Negative Gamma) 구간에 갇혀 있기 때문에, 딜러들은 당일 만기 계약 청산과 9월물 이월(Roll-over) 과정에서 미친 듯한 델타 중립 헷지 주문(기계적 매도/매수)을 쏟아내며 변동성을 극대화합니다.",
+                bull: "만기일 직전/당일 밤 정산이 끝나며, 하방 헷지용으로 딜러들이 대거 안고 있던 숏 포지션이 소멸(숏스퀴즈 반등 개시).",
+                bear: "롤오버 과정에서 차월물 풋옵션 매수세가 더 무겁게 고착화되며 음수 감마 악순환 구조가 한 달 연장되는 시나리오.",
+                action: "당일 미 증시 장 마감 전후 30분의 막판 급변동성에 흔들리지 마십시오. 이 날을 기점으로 파생 매도 압력의 80%가 일시적으로 거둬지므로, 다음 날 아시아 시장부터 '역발상 분할 매수 타점'을 시작하십시오.",
+                chart: {
+                    title: "미국 CBOE 공포지수(VIX) 동시만기 전후 추이",
+                    labels: ['만기 D-10', '만기 D-5', '만기 D-3', '만기 D-1', '만기일 당일', '만기 D+1 (정산 후)'],
+                    datasets: [{
+                        label: 'VIX Volatility Index',
+                        data: [14.2, 16.5, 19.8, 24.5, 26.8, 16.2],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.15)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                }
+            },
+            juneteenth: {
+                title: "준틴스(Juneteenth) 연방 공휴일 휴장",
+                date: "2026.06.19",
+                region: "미국 (US)",
+                regionColor: "bg-gray-100 text-gray-800",
+                importance: "☆☆☆ (없음)",
+                summary: "미국 자산 시장 전면 휴장. 파생 수급 변동성 일시정지.",
+                mechanism: "뉴욕 증시 및 채권 시장이 공휴일로 물리적 휴무 상태에 들어갑니다. 전일 마녀의 날(18일)에 휩쓸린 글로벌 기관들의 대규모 거래 결과와 감마 청산 데이터가 최종 취합 및 정산 완료되는 휴식 시간입니다.",
+                bull: "휴장 기간 중 추가 지정학 소식이 돌출되지 않아 전일 선물 옵션 만기로 지친 투자 심리가 차분하게 소화 및 정화될 때.",
+                bear: "미 증시가 멈춘 틈을 타 유럽 및 아시아 시장에서 환율이나 유가 관련 기습 변동성이 오버나잇(Overnight) 리스크로 누적될 우려.",
+                action: "주말 진입 직전 추가 포지션 진입을 멈추고 현금 잔고를 편안히 유지하며, 다음 주 초 WTI 원유 만기 숏스퀴즈 해소의 마지막 연쇄 고리를 지켜볼 채비를 하십시오.",
+                chart: {
+                    title: "공휴일 전후 S&P 500 일평균 거래대금 변화 (단위: 10억 달러)",
+                    labels: ['공휴일 D-3', '공휴일 D-2', '공휴일 D-1 (조기 마감)', '공휴일 당일 (휴장)', '공휴일 D+1'],
+                    datasets: [{
+                        label: '거래대금 (Billion USD)',
+                        data: [42.1, 44.5, 23.0, 0, 38.5],
+                        backgroundColor: '#9ca3af',
+                        borderWidth: 0
+                    }],
+                    type: 'bar'
+                }
+            },
+            wti_expiry: {
+                title: "WTI 원유 6월 인도물 선물 만기일",
+                date: "2026.06.22",
+                region: "미국 (US) ★★★",
+                regionColor: "bg-red-100 text-red-800",
+                importance: "★★★ (최고 중요)",
+                summary: "쿠싱 실물 재고 바닥(2240만 배럴)과 연결된 매도 세력의 기계적 숏스퀴즈 발생 가능 변곡점.",
+                mechanism: "쿠싱 실물 재고가 바닥(2,240만 배럴)을 기어가고 있어 선물 숏 포지션을 쥔 투기적 매도 세력은 만기 도래 시 실물 원유를 구해와 인도할 재간이 없습니다. 만약 만기 직전까지 실물 확보에 실패하면, 이들은 무차별적 시장가 숏커버링(매수 청산)을 집행하며 유가를 인위적으로 순간 폭등시킬 수 있습니다.",
+                bull: "숏스퀴즈 압력이 만기 당일 강제 매수로 최종 소화 완료된 후, '뉴스 소멸' 국면으로 진입하며 유가가 큰 폭으로 하락 조정세를 탈 때.",
+                bear: "실물 공급 지연이 현실화되면서 WTI 유가가 통제 불능 오버슈팅($100 이상)을 일으켜 인플레 공포를 전면에 재소환할 때.",
+                action: "만기일 전후 2~3일간 원유 인버스 등의 불확실성 강한 단기 도박성 매매는 철저히 피해가고, 만기가 안전하게 만료되어 유가 상승 피크아웃(정점 통과)이 확정되는 순간 주식 포트폴리오 공격 전환 전략 수립.",
+                chart: {
+                    title: "미국 쿠싱(Cushing) 원유 재고 역사적 흐름 (단위: 만 배럴)",
+                    labels: ['25.07', '25.08', '25.09', '25.10', '25.11', '25.12', '26.01', '26.02', '26.03', '26.04', '26.05'],
+                    datasets: [{
+                        label: 'Cushing Crude Stocks (Man)',
+                        data: [3240, 3010, 2850, 2900, 2720, 2650, 2500, 2480, 2350, 2290, 2240],
+                        borderColor: '#ef4444',
+                        backgroundColor: 'rgba(239, 68, 68, 0.05)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.2
+                    }]
+                }
+            },
+            pce: {
+                title: "미 5월 개인소비지출(PCE) 물가지수",
+                date: "2026.06.25",
+                region: "미국 (US)",
+                regionColor: "bg-blue-100 text-blue-800",
+                importance: "★★☆ (높음)",
+                summary: "연준 선호 물가 지표 발표를 통한 거시경제 가속 여부 확인.",
+                mechanism: "소비 대체 효과를 정밀 반영하는 PCE는 인플레이션의 기저 흐름을 보여줍니다. 6월의 대규모 파생 만기일들과 유가 숏스퀴즈 마찰이 다소 진정된 뒤 발표되는 매크로 마지막 마침표 지표이므로, 이 지표의 흐름에 따라 7~8월 여름 휴가 시즌 '서머 랠리'의 복귀 강도가 정해집니다.",
+                bull: "근원 PCE가 전월 대비 0.1~0.2% 증가율에 머물러 물가 안정화 가속 경로가 훼손되지 않았음을 최종 입증할 때.",
+                bear: "근원 PCE 상승률이 예측치를 상회하여 가을철 연준 긴축 고수 우려 및 시장 위험 자산 수급 냉각 장기화 야기.",
+                action: "모든 6월의 역경(만기, 유가 숏스퀴즈, 고용 발작)을 통과한 지점이므로, PCE 안도 시그널이 나오면 상반기 최저점 바텀피싱(Bottom Fishing)을 종료하고 과감한 롱 바이어스(매수 우위) 포지션 구축에 나설 기회입니다.",
+                chart: {
+                    title: "미국 근원 PCE 가격지수 추이 (단위: 전년 동월 대비 %)",
+                    labels: ['25.07', '25.08', '25.09', '25.10', '25.11', '25.12', '26.01', '26.02', '26.03', '26.04', '26.05'],
+                    datasets: [{
+                        label: 'Core PCE Price Index',
+                        data: [2.6, 2.7, 2.6, 2.7, 2.5, 2.4, 2.5, 2.6, 2.7, 2.6, 2.5],
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                }
+            }
+        };
+
+        const drawer = document.getElementById('eventDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const closeBtn = document.getElementById('closeDrawer');
+
+        // Drawer elements to update dynamically
+        const dRegion = document.getElementById('drawerRegionBadge');
+        const dImportance = document.getElementById('drawerImportanceBadge');
+        const dDate = document.getElementById('drawerDate');
+        const dTitle = document.getElementById('drawerTitle');
+        const dSummary = document.getElementById('drawerSummary');
+        const dMechanism = document.getElementById('drawerMechanism');
+        const dBull = document.getElementById('drawerBull');
+        const dBear = document.getElementById('drawerBear');
+        const dAction = document.getElementById('drawerAction');
+        const dChartTitle = document.getElementById('drawerChartTitle');
+
+        // Render Dynamic Chart Inside Drawer
+        function renderDrawerChart(eventId) {
+            const chartData = eventDetails[eventId]?.chart;
+            const chartContainer = document.getElementById('drawerChartContainer');
+            
+            // Clear previous chart instance if exists
+            if (drawerChartInstance) {
+                drawerChartInstance.destroy();
+                drawerChartInstance = null;
+            }
+
+            if (!chartData) {
+                chartContainer.style.display = 'none';
+                return;
+            }
+
+            chartContainer.style.display = 'block';
+            dChartTitle.innerText = chartData.title || '최근 추이 및 역사적 분석';
+
+            const canvasCtx = document.getElementById('drawerChart').getContext('2d');
+            const configType = chartData.type || 'line';
+
+            // Generate New Chart JS Instance inside Drawer
+            drawerChartInstance = new Chart(canvasCtx, {
+                type: configType,
+                data: {
+                    labels: chartData.labels,
+                    datasets: chartData.datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: chartData.datasets.length > 1,
+                            position: 'top',
+                            labels: { boxWidth: 10, font: { size: 9 } }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        x: { 
+                            grid: { display: false },
+                            ticks: { font: { size: 8 } }
+                        },
+                        y: { 
+                            grid: { color: '#f3f4f6' },
+                            ticks: { font: { size: 8 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Open Drawer Logic
+        function openDrawer(eventId) {
+            const info = eventDetails[eventId];
+            if (!info) return;
+
+            selectedEventIdForAi = eventId; // Store selected ID for LLM trigger
+            
+            // Reset AI box inside Drawer
+            const aiBox = document.getElementById('drawerAiBox');
+            const aiResult = document.getElementById('drawerAiResult');
+            const aiCitations = document.getElementById('drawerAiCitations');
+            aiBox.classList.add('hidden');
+            aiResult.innerText = '';
+            aiCitations.classList.add('hidden');
+
+            // Update DOM inside Drawer
+            dRegion.innerText = info.region;
+            dRegion.className = `text-xs font-bold px-2.5 py-1 rounded ${info.regionColor}`;
+            dImportance.innerText = `중요도: ${info.importance}`;
+            dDate.innerText = info.date;
+            dTitle.innerText = info.title;
+            dSummary.innerText = info.summary;
+            dMechanism.innerText = info.mechanism;
+            dBull.innerText = info.bull;
+            dBear.innerText = info.bear;
+            dAction.innerText = info.action;
+
+            // Render Dynamic Historical Chart
+            renderDrawerChart(eventId);
+
+            // Transitions to show Drawer & Overlay
+            overlay.classList.remove('pointer-events-none', 'opacity-0');
+            overlay.classList.add('opacity-100');
+            drawer.classList.remove('translate-x-full');
+            drawer.classList.add('translate-x-0');
+        }
+
+        // Close Drawer Logic
+        function closeDrawer() {
+            overlay.classList.remove('opacity-100');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+            drawer.classList.remove('translate-x-0');
+            drawer.classList.add('translate-x-full');
+            
+            // Destroy chart on close to avoid residual processes
+            if (drawerChartInstance) {
+                drawerChartInstance.destroy();
+                drawerChartInstance = null;
+            }
+        }
+
+        // Attach event listeners to calendar items
+        document.querySelectorAll('.calendar-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const eventId = this.getAttribute('data-event-id');
+                if (eventId) {
+                    openDrawer(eventId);
+                }
+            });
+        });
+
+        // Close events
+        closeBtn.addEventListener('click', closeDrawer);
+        overlay.addEventListener('click', closeDrawer);
+
+        // SPA Tab routing bindings
+        document.querySelectorAll('.nav-item').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href && href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = href.substring(1);
+                    switchView(targetId);
+                }
+            });
+        });
+
+        // Handle direct hash loading if accessed with bookmark (e.g. #glossary)
+        if (window.location.hash) {
+            const initialHash = window.location.hash.substring(1);
+            if (initialHash === 'glossary') {
+                switchView('glossary');
+            }
+        }
+
+        // Glossary Search engine
+        const searchInput = document.getElementById('glossarySearchInput');
+        const cards = document.querySelectorAll('.glossary-card');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                cards.forEach(card => {
+                    const keywords = card.getAttribute('data-keywords') || '';
+                    const title = card.querySelector('h4')?.innerText.toLowerCase() || '';
+                    const text = card.querySelector('p')?.innerText.toLowerCase() || '';
+
+                    if (keywords.includes(query) || title.includes(query) || text.includes(query)) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+
+    /**
+     * STREAMING_CHUNK: Implementing dynamic AI Glossary Term Generator...
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+        const glossaryGrid = document.getElementById('glossary-grid');
+        const searchInput = document.getElementById('glossarySearchInput');
+        const glossaryEmptyState = document.getElementById('glossaryEmptyState');
+        const searchQueryText = document.getElementById('searchQueryText');
+        const aiGenerateSearchBtn = document.getElementById('aiGenerateSearchBtn');
+        const aiGlossaryInput = document.getElementById('aiGlossaryInput');
+        const aiGlossaryBtn = document.getElementById('aiGlossaryBtn');
+
+        // Dynamic search tracking supporting dynamically added nodes
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                const currentCards = document.querySelectorAll('.glossary-card');
+                let visibleCount = 0;
+
+                currentCards.forEach(card => {
+                    const keywords = card.getAttribute('data-keywords') || '';
+                    const title = card.querySelector('h4')?.innerText.toLowerCase() || '';
+                    const text = card.querySelector('p')?.innerText.toLowerCase() || '';
+
+                    if (keywords.includes(query) || title.includes(query) || text.includes(query)) {
+                        card.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Trigger AI empty state recommendations if query not found
+                if (visibleCount === 0 && query !== '') {
+                    glossaryEmptyState.classList.remove('hidden');
+                    searchQueryText.innerText = query;
+                } else {
+                    glossaryEmptyState.classList.add('hidden');
+                }
+            });
+        }
+
+        // Logic to construct new custom card via Gemini API
+        async function createCustomAiTermCard(targetTerm) {
+            if (!targetTerm.trim()) return;
+
+            // Prepare button states
+            aiGlossaryBtn.disabled = true;
+            aiGenerateSearchBtn.disabled = true;
+            const originalBtnText = aiGlossaryBtn.innerHTML;
+            aiGlossaryBtn.innerHTML = `<span>⏳ 생성 중...</span>`;
+
+            const systemPrompt = "당신은 세계 정상급 헤지펀드의 시니어 매크로 트레이더이자 거시경제 교육가입니다. 요청하는 용어에 대한 정밀한 정의와 매크로 마찰점을 격조 있고 완벽하게 서술해 주십시오.";
+            const userPrompt = `용어 "${targetTerm}"에 대한 해설을 작성해 주십시오. 
+반드시 아래의 출력 형식을 토씨 하나 틀리지 않게 엄격하게 지켜 플레인 텍스트 형식으로 답하세요. 별도의 서설이나 마크다운 백틱(\`\`\`) 포맷은 절대 사용하지 마세요.
+
+[TITLE]: ${targetTerm}
+[SUBTITLE]: (영문명 및 해당 용어의 함축적인 이니셜/약어)
+[KEYWORDS]: (이 용어를 찾기 위한 관련 검색 키워드 4개 이상을 띄어쓰기로 구분)
+[DEFINITION]: (용어에 대한 구조적인 정의를 2~3문장 이내로 상세하게 한글 서술)
+[CONNECTION]: (이 용어가 현재의 달러 유동성 수급 불균형, 고환율, 금리 변동성과 어떻게 연결되는지 매크로 연결고리로 1~2문장 서술)`;
+
+            try {
+                const response = await fetchGeminiInsight(userPrompt, systemPrompt, true);
+                const rawText = response.text;
+
+                // Match groups
+                const titleMatch = rawText.match(/\[TITLE\]:\s*(.*)/i);
+                const subtitleMatch = rawText.match(/\[SUBTITLE\]:\s*(.*)/i);
+                const keywordsMatch = rawText.match(/\[KEYWORDS\]:\s*(.*)/i);
+                const definitionMatch = rawText.match(/\[DEFINITION\]:\s*([\s\S]*?)(?=\[CONNECTION\]|$)/i);
+                const connectionMatch = rawText.match(/\[CONNECTION\]:\s*([\s\S]*)/i);
+
+                const parsedTitle = titleMatch ? titleMatch[1].trim() : targetTerm;
+                const parsedSubtitle = subtitleMatch ? subtitleMatch[1].trim() : "AI Custom Definition";
+                const parsedKeywords = keywordsMatch ? keywordsMatch[1].trim() : targetTerm;
+                const parsedDefinition = definitionMatch ? definitionMatch[1].trim() : "정의가 완벽히 파싱되지 않았습니다. 원래 용어의 본문 내용을 검토하십시오.";
+                const parsedConnection = connectionMatch ? connectionMatch[1].trim() : "실시간 매크로 연결 메커니즘을 정의하지 못했습니다.";
+
+                // Generate new dynamic card element
+                const newCard = document.createElement('div');
+                newCard.className = "glossary-card bg-gradient-to-br from-white to-blue-50/10 p-6 rounded-2xl border-2 border-blue-500/30 shadow-md ai-pulse transition-all";
+                newCard.setAttribute('data-keywords', `${parsedKeywords.toLowerCase()} ai생성 커스텀 ${targetTerm.toLowerCase()}`);
+                newCard.innerHTML = `
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="p-2.5 bg-blue-100 text-blue-700 rounded-xl font-bold text-sm">✨ AI 사전</span>
+                        <h4 class="font-bold text-gray-900 text-lg">${parsedTitle} <span class="text-xs text-gray-400 font-normal">${parsedSubtitle}</span></h4>
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">${parsedDefinition}</p>
+                    <div class="mt-4 pt-3 border-t border-gray-100 text-xs text-indigo-600 font-medium">
+                        📍 매크로 연결고리: ${parsedConnection}
+                    </div>
+                `;
+
+                // Add to grid
+                glossaryGrid.insertBefore(newCard, glossaryGrid.firstChild);
+
+                // Clear controls
+                if (searchInput) searchInput.value = '';
+                aiGlossaryInput.value = '';
+                glossaryEmptyState.classList.add('hidden');
+
+                // Force display reset
+                document.querySelectorAll('.glossary-card').forEach(card => card.style.display = 'block');
+
+                // Smooth scroll view to the newly generated AI card
+                newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Retain glow element for a while to highlight visual cue
+                setTimeout(() => {
+                    newCard.classList.remove('ai-pulse', 'border-blue-500/30');
+                    newCard.classList.add('border-gray-100');
+                }, 4000);
+
+            } catch (err) {
+                console.error("AI Glossary integration failed:", err);
+                const errorBox = document.createElement('div');
+                errorBox.className = "col-span-full p-4 bg-red-50 text-red-700 text-xs rounded-xl border border-red-200 text-center";
+                errorBox.innerText = "용어를 정의하는 도중 Gemini API 에러가 발생했습니다. 잠시 후 재시도 해보세요.";
+                glossaryGrid.insertBefore(errorBox, glossaryGrid.firstChild);
+                setTimeout(() => errorBox.remove(), 4000);
+            } finally {
+                aiGlossaryBtn.disabled = false;
+                aiGenerateSearchBtn.disabled = false;
+                aiGlossaryBtn.innerHTML = originalBtnText;
+            }
+        }
+
+        // Direct input trigger
+        aiGlossaryBtn.addEventListener('click', () => {
+            createCustomAiTermCard(aiGlossaryInput.value);
+        });
+
+        aiGlossaryInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                createCustomAiTermCard(aiGlossaryInput.value);
+            }
+        });
+
+        // Search empty-state trigger
+        aiGenerateSearchBtn.addEventListener('click', () => {
+            createCustomAiTermCard(searchInput.value);
+        });
+    });
+
+    /**
+     * Gemini LLM Call via API Gateway
+     */
+    async function fetchGeminiInsight(userPrompt, systemInstruction, useSearch = true, onLoadingStatus = null) {
+        // Canvas runtime automatically injects the active key when apiKey is left as an empty string.
+        const apiKey = ""; 
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        const payload = {
+            contents: [{
+                parts: [{ text: userPrompt }]
+            }],
+            systemInstruction: {
+                parts: [{ text: systemInstruction }]
+            }
+        };
+
+        if (useSearch) {
+            payload.tools = [{ "google_search": {} }];
+        }
+
+        // Implement exponential backoff for network resilience (handling potential rate limits gracefully)
+        let retries = 3;
+        let delay = 1000;
+        
+        for (let attempt = 0; attempt < retries; attempt++) {
+            try {
+                if (onLoadingStatus) onLoadingStatus(attempt > 0 ? `API Throttled. 재시도 중... (${attempt}/${retries})` : "실시간 구글 인덱싱 정보 수집 중...");
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && attempt < retries - 1) {
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
+                        continue;
+                    }
+                    throw new Error(`API 응답 실패: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                const contentText = candidate?.content?.parts?.[0]?.text;
+
+                if (!contentText) {
+                    throw new Error("Gemini API가 유효한 텍스트 결과를 반환하지 못했습니다.");
+                }
+
+                // Extract Grounding Citations metadata if search tool was enabled
+                let citations = [];
+                const groundingMetadata = candidate?.groundingMetadata;
+                if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                    citations = groundingMetadata.groundingAttributions
+                        .map(attribution => ({
+                            uri: attribution.web?.uri,
+                            title: attribution.web?.title,
+                        }))
+                        .filter(source => source.uri && source.title);
+                }
+
+                return { text: contentText, sources: citations };
+            } catch (error) {
+                if (attempt === retries - 1) {
+                    console.error("Gemini API 최종 호출 에러:", error);
+                    throw error;
+                }
+            }
+        }
+    }
+
+    // Simple parser to display markdown-like structures nicely in HTML
+    function parseMarkdownToHtml(markdownText) {
+        let text = markdownText;
+        // Escape HTML
+        text = text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        // Bold tags
+        text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Unordered lists
+        text = text.replace(/^\s*[\-\*]\s+(.*)$/gm, '<li class="ml-4 list-disc">$1</li>');
+        // Linebreaks
+        text = text.replace(/\n/g, '<br>');
+        return text;
+    }
+
+    /**
+     * AI Co-Pilot Terminal Chat Operations
+     */
+    const aiChatLog = document.getElementById('aiChatLog');
+    const aiUserInput = document.getElementById('aiUserInput');
+    const sendAiBtn = document.getElementById('sendAiBtn');
+    const aiSearchToggle = document.getElementById('aiSearchToggle');
+    const aiLoadingOverlay = document.getElementById('aiLoadingOverlay');
+    const aiLoadingText = document.getElementById('aiLoadingText');
+    const chatCitationsArea = document.getElementById('chatCitationsArea');
+    const chatCitationsContainer = document.getElementById('chatCitationsContainer');
+
+    async function sendQueryToCoPilot(query) {
+        if (!query.trim()) return;
+
+        // Append User Bubble
+        const userBubble = document.createElement('div');
+        userBubble.className = "bg-gray-100 text-gray-800 p-3 rounded-xl max-w-[85%] ml-auto shadow-sm text-sm";
+        userBubble.innerText = query;
+        aiChatLog.appendChild(userBubble);
+        aiChatLog.scrollTop = aiChatLog.scrollHeight;
+
+        // Setup loaders
+        aiLoadingOverlay.classList.remove('hidden');
+        aiLoadingOverlay.classList.add('flex');
+        aiUserInput.value = '';
+        sendAiBtn.disabled = true;
+
+        const useSearch = aiSearchToggle.checked;
+        const systemPrompt = "당신은 월가 헤지펀드 소속의 최정상급 퀀트이자 글로벌 거시경제(Macro) 파생 트레이더입니다. 음수 감마(Negative Gamma), TGA(재무부 일반계좌), RRP(역레포), 지급준비금 간의 역학 관계 및 글로벌 유가 수급 연쇄 구조를 완벽하게 꿰뚫어 보고 있습니다. 사용자의 어떠한 질문이나 리스크 분석 요청에 대해서도 단순한 일반론이 아닌 구체적인 수급 경로와 트레이딩 리스크 방어 관점(Bull/Bear 시나리오 포함)에서 심도 깊고 통찰력 넘치는 분석을 제공해 주십시오. 답변은 정중하면서도 군더더기 없이 프로페셔널한 한국어로 작성하세요.";
+
+        try {
+            const result = await fetchGeminiInsight(
+                query, 
+                systemPrompt, 
+                useSearch, 
+                (statusMsg) => { aiLoadingText.innerText = statusMsg; }
+            );
+
+            // Append AI Response Bubble
+            const aiBubble = document.createElement('div');
+            aiBubble.className = "bg-blue-50 text-blue-950 p-4 rounded-xl max-w-[90%] mr-auto shadow-sm border border-blue-100 text-sm whitespace-pre-line";
+            aiBubble.innerHTML = parseMarkdownToHtml(result.text);
+            aiChatLog.appendChild(aiBubble);
+
+            // Process sources attributions
+            if (result.sources && result.sources.length > 0) {
+                chatCitationsArea.classList.remove('hidden');
+                chatCitationsContainer.innerHTML = '';
+                result.sources.slice(0, 8).forEach((source, index) => {
+                    const sourceChip = document.createElement('a');
+                    sourceChip.href = source.uri;
+                    sourceChip.target = "_blank";
+                    sourceChip.className = "inline-flex items-center gap-1 text-[10px] bg-blue-100/70 hover:bg-blue-200 text-blue-800 px-2 py-0.5 rounded-full transition-all truncate max-w-[180px]";
+                    sourceChip.innerHTML = `<span>🔗</span> <span class="truncate">${source.title}</span>`;
+                    chatCitationsContainer.appendChild(sourceChip);
+                });
+            } else {
+                chatCitationsArea.classList.add('hidden');
+            }
+
+            aiChatLog.scrollTop = aiChatLog.scrollHeight;
+        } catch (err) {
+            const errorBubble = document.createElement('div');
+            errorBubble.className = "bg-red-50 text-red-800 p-3 rounded-xl max-w-[85%] mr-auto border border-red-100 text-xs";
+            errorBubble.innerText = "죄송합니다. 수급 데이터 연동 중 통신 에러가 발생했습니다. 잠시 후 다시 시도해 주세요.";
+            aiChatLog.appendChild(errorBubble);
+        } finally {
+            aiLoadingOverlay.classList.remove('flex');
+            aiLoadingOverlay.classList.add('hidden');
+            sendAiBtn.disabled = false;
+        }
+    }
+
+    // Action Triggers
+    sendAiBtn.addEventListener('click', () => {
+        sendQueryToCoPilot(aiUserInput.value);
+    });
+
+    aiUserInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            sendQueryToCoPilot(aiUserInput.value);
+        }
+    });
+
+    window.sendPresetPrompt = function(promptText) {
+        sendQueryToCoPilot(promptText);
+    };
+
+
+    /**
+     * Event Details Drawer AI Instant Briefing Trigger
+     */
+    const drawerAiBtn = document.getElementById('drawerAiBtn');
+    const drawerAiBox = document.getElementById('drawerAiBox');
+    const drawerAiLoader = document.getElementById('drawerAiLoader');
+    const drawerAiResult = document.getElementById('drawerAiResult');
+    const drawerAiCitations = document.getElementById('drawerAiCitations');
+    const drawerAiCitationsList = document.getElementById('drawerAiCitationsList');
+
+    drawerAiBtn.addEventListener('click', async () => {
+        if (!selectedEventIdForAi) return;
+
+        const info = eventDetails[selectedEventIdForAi];
+        if (!info) return;
+
+        // Show loading state
+        drawerAiBox.classList.remove('hidden');
+        drawerAiLoader.classList.remove('hidden');
+        drawerAiResult.classList.add('hidden');
+        drawerAiResult.innerText = '';
+        drawerAiCitations.classList.add('hidden');
+        drawerAiBtn.disabled = true;
+
+        const drawerQuery = `미국/한국 거시경제 지표 및 일정 중 "${info.title}" (${info.date}) 관련 최근 실시간 컨센서스 뉴스 및 국채 시장 금리, 외환 보유고 변동 추이를 구글 검색으로 확인해줘. 그리고 이 지표의 결과가 현재 원화 환율 1,550원 저항선 돌파 여부와 미국 대형 딜러들의 '음수 감마 헷지 매도 압력'에 어떤 직접적인 충격 경로를 보일지 3대 핵심 영향 시나리오로 요약 브리핑해줘.`;
+        const drawerSystemInstruction = "당신은 실시간으로 구글 파이낸스를 추적하여 투자 의사결정을 내리는 헤지펀드 수석 분석가입니다. 중동 리스크와 수급 불균형, 국채 가치 하락 및 옵션 만기일의 물리적 수급 효과에 기반한 명확하고 군더더기 없는 3대 영향성 위주의 즉석 보고서를 5줄 이내로 간결히 요약해서 존댓말로 제언하십시오.";
+
+        try {
+            const aiReport = await fetchGeminiInsight(drawerQuery, drawerSystemInstruction, true);
+
+            // Hide Loader & Show Result
+            drawerAiLoader.classList.add('hidden');
+            drawerAiResult.classList.remove('hidden');
+            drawerAiResult.innerHTML = parseMarkdownToHtml(aiReport.text);
+
+            // Handle citations
+            if (aiReport.sources && aiReport.sources.length > 0) {
+                drawerAiCitations.classList.remove('hidden');
+                drawerAiCitationsList.innerHTML = '';
+                aiReport.sources.slice(0, 4).forEach((src) => {
+                    const chip = document.createElement('a');
+                    chip.href = src.uri;
+                    chip.target = "_blank";
+                    chip.className = "inline-flex items-center gap-0.5 text-[9px] bg-indigo-100 hover:bg-indigo-200 text-indigo-800 px-2 py-0.5 rounded transition-all truncate max-w-[140px]";
+                    chip.innerHTML = `<span>🔗</span> <span class="truncate">${src.title}</span>`;
+                    drawerAiCitationsList.appendChild(chip);
+                });
+            }
+        } catch (err) {
+            drawerAiLoader.classList.add('hidden');
+            drawerAiResult.classList.remove('hidden');
+            drawerAiResult.innerHTML = `<span class="text-red-500">실시간 데이터 수집 실패: 일시적인 트래픽 제한 또는 네트워크 불안정 상태입니다. 다시 요청 버튼을 눌러 주십시오.</span>`;
+        } finally {
+            drawerAiBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
